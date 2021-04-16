@@ -8,7 +8,7 @@ using TinyBank.Core.Services.Options;
 
 namespace TinyBank.Core.Implementation.Services.Extensions
 {
-    public static class CardExtensions
+    public static class Extensions
     {
         public static bool IsActive(this Card value)
         {
@@ -60,5 +60,26 @@ namespace TinyBank.Core.Implementation.Services.Extensions
 
         }
 
+        public static ApiResult<Card> Validations(this Account account, PaymentOptions options)
+        {
+            if (account == null) {
+                return ApiResult<Card>.CreateFailed(
+                    Constants.ApiResultCode.BadRequest, "No Connected Account");
+            }
+
+            if (account.State != Constants.AccountState.Active) {
+                return ApiResult<Card>.CreateFailed(
+                    Constants.ApiResultCode.BadRequest, $"Account State {account.State}");
+            }
+
+            decimal amount = options.Amount;
+            if (account.Balance < amount) {
+                return ApiResult<Card>.CreateFailed(
+                    Constants.ApiResultCode.BadRequest, "Ιnsufficient Βalance");
+            }
+            return null;
+
+        }
+
     }
-    }
+}

@@ -66,5 +66,6 @@ $('.js-card-payment').on('click',
         }).fail(failure => {
             console.log('fail');
             $('.alert-danger').toggleClass('d-none');
+            $('.alert-success').hide();
         });
     });

@@ -109,37 +109,25 @@ namespace TinyBank.Core.Implementation.Services
             }
 
             var card = Get(options.CardNumber);
-
-            var cardValidations = card.Validations(options);
-
-            if (cardValidations != null) {
-                return cardValidations;
+            var cardValidationsApiResult = card.Validations(options);
+            if (cardValidationsApiResult != null) {
+                return cardValidationsApiResult;
             }
 
             var account = card.Accounts.FirstOrDefault();
-            if (account == null) {
-                return ApiResult<Card>.CreateFailed(
-                    Constants.ApiResultCode.BadRequest, "No Connected Account");
-            }
-
-            if (account.State != Constants.AccountState.Active) {
-                return ApiResult<Card>.CreateFailed(
-                    Constants.ApiResultCode.BadRequest, $"Account State {account.State}");
+            var accountValidationsApiResult = account.Validations(options);
+            if (accountValidationsApiResult != null) {
+                return accountValidationsApiResult;
             }
 
             decimal amount = options.Amount;
-            if (account.Balance < amount) {
-                return ApiResult<Card>.CreateFailed(
-                    Constants.ApiResultCode.BadRequest, "Ιnsufficient Βalance");
-            }
-
             account.Balance -= amount;
             try {
                 _dbContext.SaveChanges();
             }
             catch (Exception) {
                 return ApiResult<Card>.CreateFailed(
-                    Constants.ApiResultCode.InternalServerError, "Could not save account");
+                    Constants.ApiResultCode.InternalServerError, "Could Not Save");
             }
             return ApiResult<Card>.CreateSuccessful(card);
         }
