@@ -25,8 +25,8 @@ namespace TinyBank.Core.Tests
         public Customer RegisterCustomer_Success(string countryCode)
         {
             var options = new RegisterCustomerOptions() {
-                Firstname = "Georgia",
-                Lastname = "Papadopoulou",
+                Firstname = "Lefteris",
+                Lastname = "Xidis",
                 Type = Constants.CustomerType.PhysicalEntity,
                 CountryCode = countryCode,
                 VatNumber = GenerateVat(countryCode)

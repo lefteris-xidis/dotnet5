@@ -10,7 +10,12 @@ namespace TinyBank.Core.Services
 {
     public interface IAccountService
     {
-        public ApiResult<Account> Create(Guid customerId,
-            Options.CreateAccountOptions options);
+        public ApiResult<Account> Create(Guid customerId, Options.CreateAccountOptions options);
+
+        public ApiResult<Account> GetById(string accountId);
+
+        public ApiResult<Account> Charge(string accountId, decimal amount);
+
+
     }
 }

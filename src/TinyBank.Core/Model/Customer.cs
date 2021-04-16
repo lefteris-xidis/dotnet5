@@ -30,8 +30,6 @@ namespace TinyBank.Core.Model
         /// </summary>
         public string Lastname { get; set; }
 
-        public string FatherName { get; set; }
-
         /// <summary>
         /// 
         /// </summary>

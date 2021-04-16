@@ -12,6 +12,7 @@ namespace TinyBank.Core.Model
         public Constants.CardType CardType { get; set; }
         public List<Account> Accounts { get; set; }
 
+
         public Card()
         {
             CardId = Guid.NewGuid();

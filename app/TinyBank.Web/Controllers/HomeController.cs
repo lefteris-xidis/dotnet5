@@ -34,16 +34,16 @@ namespace TinyBank.Web.Controllers
         public IActionResult Index()
         {
             var accounts = _dbContext.Set<Account>()
-                .Include(a => a.Customer).ToList();
-                //.Select(a => new {
-                //    AccountId = a.AccountId,
-                //    Description = a.Description,
-                //    Customer = new {
-                //        FirstName = a.Customer.Firstname,
-                //        LastName = a.Customer.Lastname
-                //    }
-                //})
-                //.ToList();
+                .Include(a => a.Customer)
+                .Select(a => new {
+                     AccountId = a.AccountId,
+                     Description = a.Description,
+                     Customer = new {
+                         FirstName = a.Customer.Firstname,
+                         LastName = a.Customer.Lastname
+                     }
+                 })
+                .ToList();
 
             return Json(accounts);
         }

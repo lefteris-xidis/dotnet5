@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -21,7 +22,7 @@ namespace TinyBank.Core.Implementation.Services
         {
             _customers = customers;
             _dbContext = dbContext;
-        } 
+        }
 
         public ApiResult<Account> Create(Guid customerId,
             CreateAccountOptions options)
@@ -49,7 +50,7 @@ namespace TinyBank.Core.Implementation.Services
 
             var account = new Account() {
                 AccountId = CreateAccountId(customer.CountryCode),
-                Balance = 0M,
+                Balance = options.Balance,
                 CurrencyCode = options.CurrencyCode,
                 Customer = customer,
                 State = Constants.AccountState.Active,
@@ -60,7 +61,8 @@ namespace TinyBank.Core.Implementation.Services
 
             try {
                 _dbContext.SaveChanges();
-            } catch (Exception) {
+            }
+            catch (Exception) {
                 return ApiResult<Account>.CreateFailed(
                     Constants.ApiResultCode.InternalServerError, "Could not save account");
             }
@@ -68,12 +70,73 @@ namespace TinyBank.Core.Implementation.Services
             return ApiResult<Account>.CreateSuccessful(account);
         }
 
+        public ApiResult<Account> GetById(string accountId)
+        {
+            if (accountId == null) {
+                return ApiResult<Account>.CreateFailed(
+                    Constants.ApiResultCode.BadRequest, $"Null {nameof(accountId)}");
+            }
+
+            // SELECT FROM Account
+            IQueryable<Account> accountResultSearch = _dbContext.Set<Account>().AsQueryable().Where(a => a.AccountId == accountId);
+            var account = accountResultSearch.Include(c => c.Cards).SingleOrDefault();
+            if (account == null) {
+                return new ApiResult<Account>() {
+                    Code = Constants.ApiResultCode.NotFound,
+                    ErrorText = $"Customer {accountId} was not found"
+                };
+            }
+            else {
+                return new ApiResult<Account>() {
+                    Data = account
+                };
+
+            }
+        }
+
+        public ApiResult<Account> Charge(string accountId, decimal amount)
+        {
+            if (accountId == null) {
+                return ApiResult<Account>.CreateFailed(
+                    Constants.ApiResultCode.BadRequest, $"Null {nameof(accountId)}");
+            }
+
+            IQueryable<Account> accountResultSearch = _dbContext.Set<Account>().AsQueryable().Where(a => a.AccountId == accountId);
+            var account = accountResultSearch.Include(c => c.Cards).SingleOrDefault();
+            if (account == null) {
+                return ApiResult<Account>.CreateFailed(
+                    Constants.ApiResultCode.NotFound, $"Account {accountId} was not found");
+            }
+
+            if (account.State != Constants.AccountState.Active) {
+                return ApiResult<Account>.CreateFailed(
+                    Constants.ApiResultCode.Success, $"Account State {account.State}");
+            }
+
+            if (account.Balance < amount) {
+                return ApiResult<Account>.CreateFailed(
+                    Constants.ApiResultCode.Success, "Ιnsufficient Βalance");
+            }
+
+            account.Balance -= amount;
+            //_dbContext.Add(account);
+            try {
+                _dbContext.SaveChanges();
+            }
+            catch (Exception) {
+                return ApiResult<Account>.CreateFailed(
+                    Constants.ApiResultCode.InternalServerError, "Could not save account");
+            }
+            return ApiResult<Account>.CreateSuccessful(account);
+        }
+
+
         private string CreateAccountId(string countryCode)
         {
             var random = new Random();
-            var accountId = $"{countryCode}{random.Next(1000, int.MaxValue).ToString().PadLeft(20, '0')}";
-
-            return accountId;
+            var accountId = random.Next(1000, int.MaxValue).ToString().PadLeft(20, '0');
+            var res = countryCode + accountId;
+            return res;
         }
     }
 }

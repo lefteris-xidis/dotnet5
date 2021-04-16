@@ -5,7 +5,7 @@
 
 $('.js-update-customer').on('click',
     (event) => {
-        debugger;
+        //debugger;
         let firstName = $('.js-first-name').val();
         let lastName = $('.js-last-name').val();
         let customerId = $('.js-customer-id').val();
@@ -25,7 +25,6 @@ $('.js-update-customer').on('click',
             data: data
         }).done(response => {
             console.log('Update was successful');
-            // success
         }).fail(failure => {
             // fail
             console.log('Update failed');
@@ -35,4 +34,37 @@ $('.js-update-customer').on('click',
 $('.js-customers-list tbody tr').on('click',
     (event) => {
         console.log($(event.currentTarget).attr('id'));
+    });
+
+$('.js-card-payment').on('click',
+    (event) => {
+        let cardnumber = $('.js-card-payment-cardnumber').val();
+        let expmonth = $('.js-card-payment-expmonth').val();
+        let expyear = $('.js-card-payment-expyear').val();
+        let amount = $('.js-card-payment-amount').val();
+
+        console.log(`${cardnumber} ${expmonth} ${expyear} ${amount}`);
+
+        let data = JSON.stringify({
+            cardnumber: cardnumber,
+            expirationmonth: expmonth,
+            expirationyear: expyear,
+            amount: amount
+        });
+
+        // ajax call
+        let result = $.ajax({
+            url: `/card/checkout`,
+            method: 'POST',
+            contentType: 'application/json',
+            data: data
+        }).done(response => {
+            console.log('success');
+            $('.card-payment-form').hide();
+            ('.alert-danger').hide();
+            $('.alert-success').toggleClass('d-none');
+        }).fail(failure => {
+            console.log('fail');
+            $('.alert-danger').toggleClass('d-none');
+        });
     });

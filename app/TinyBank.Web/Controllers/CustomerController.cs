@@ -61,9 +61,10 @@ namespace TinyBank.Web.Controllers
                 return result.ToActionResult();
             }
 
+            //return Json(result.Data);
             return View(result.Data);
         }
-
+         
         [HttpPut("{id:guid}")]
         public IActionResult UpdateDetails(Guid id,
             [FromBody] UpdateCustomerOptions options)
