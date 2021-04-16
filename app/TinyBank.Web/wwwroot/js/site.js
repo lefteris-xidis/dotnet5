@@ -61,7 +61,7 @@ $('.js-card-payment').on('click',
         }).done(response => {
             console.log('success');
             $('.card-payment-form').hide();
-            ('.alert-danger').hide();
+            $('.alert-danger').hide();
             $('.alert-success').toggleClass('d-none');
         }).fail(failure => {
             console.log('fail');

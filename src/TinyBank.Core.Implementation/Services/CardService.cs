@@ -108,31 +108,18 @@ namespace TinyBank.Core.Implementation.Services
                     Constants.ApiResultCode.BadRequest, $"Null {nameof(options)}");
             }
 
-            IQueryable<Card> cardsSearchRes = _dbContext.Set<Card>().AsQueryable().Where(a => a.CardNumber == options.CardNumber);
-            var card = cardsSearchRes
-                .Include(c => c.Accounts)
-                .SingleOrDefault();
-            
-            if (card == null) {
-                return ApiResult<Card>.CreateFailed(
-                    Constants.ApiResultCode.NotFound, $"Card {options.CardNumber} was not found");
-            }
+            var card = Get(options.CardNumber);
 
-            if (!card.IsValidRequest(options)) {
-                return ApiResult<Card>.CreateFailed(
-                    Constants.ApiResultCode.BadRequest, $"Bad Request");
-            }
+            var cardValidations = card.Validations(options);
 
-            if (!card.IsActive()) {
-                return ApiResult<Card>.CreateFailed(
-                    Constants.ApiResultCode.BadRequest, $"InActive Card {options.CardNumber}");
+            if (cardValidations != null) {
+                return cardValidations;
             }
 
             var account = card.Accounts.FirstOrDefault();
             if (account == null) {
                 return ApiResult<Card>.CreateFailed(
                     Constants.ApiResultCode.BadRequest, "No Connected Account");
-
             }
 
             if (account.State != Constants.AccountState.Active) {
@@ -140,7 +127,7 @@ namespace TinyBank.Core.Implementation.Services
                     Constants.ApiResultCode.BadRequest, $"Account State {account.State}");
             }
 
-            decimal amount = options.Amount;// decimal.Parse(options.Amount);
+            decimal amount = options.Amount;
             if (account.Balance < amount) {
                 return ApiResult<Card>.CreateFailed(
                     Constants.ApiResultCode.BadRequest, "Ιnsufficient Βalance");
@@ -155,6 +142,15 @@ namespace TinyBank.Core.Implementation.Services
                     Constants.ApiResultCode.InternalServerError, "Could not save account");
             }
             return ApiResult<Card>.CreateSuccessful(card);
+        }
+
+        private Card Get(string cardNumber)
+        {
+            IQueryable<Card> cardsSearchRes = _dbContext.Set<Card>().AsQueryable().Where(a => a.CardNumber == cardNumber);
+            var card = cardsSearchRes
+                .Include(c => c.Accounts)
+                .SingleOrDefault();
+            return card;
         }
 
 

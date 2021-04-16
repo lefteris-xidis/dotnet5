@@ -33,15 +33,32 @@ namespace TinyBank.Core.Implementation.Services.Extensions
             try {
                 int month = int.Parse(options?.ExpirationMonth);
                 int year = int.Parse(options?.ExpirationYear);
-                //decimal amount = decimal.Parse(options?.Amount);
                 return true;
             }
             catch {
                 return false;
             }
+        }
+
+        public static ApiResult<Card> Validations(this Card card, PaymentOptions options)
+        {
+            if (card == null) {
+                return ApiResult<Card>.CreateFailed(
+                    Constants.ApiResultCode.NotFound, $"Card {options.CardNumber} was not found");
+            }
+
+            if (!card.IsValidRequest(options)) {
+                return ApiResult<Card>.CreateFailed(
+                    Constants.ApiResultCode.BadRequest, $"Bad Request");
+            }
+
+            if (!card.IsActive()) {
+                return ApiResult<Card>.CreateFailed(
+                    Constants.ApiResultCode.BadRequest, $"InActive Card {options.CardNumber}");
+            }
+            return null;
 
         }
 
-
     }
-}
+    }
